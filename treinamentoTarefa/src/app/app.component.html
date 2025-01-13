@@ -3,26 +3,24 @@
 
   <po-menu [p-menus]="menus"></po-menu>
 
-
-
   <po-page-default p-title="Tarefas">
     
     <po-button p-label="Nova Tarefa" (p-click)="abrirModal()"> </po-button>
     
-    
-    <po-modal #modalAddTarefa p-title="Adicionar Nova Tarefa"> 
+    <po-modal #modalTarefa p-title="Adicionar Nova Tarefa"> 
       
       <form #form="ngForm">
-        <po-input  p-label="Titulo" name="nome" [(ngModel)]="nome"></po-input>
-        <po-combo name="categoria" p-clean p-label="Categorias" [ngModel]="categoria" (ngModelChange)="categoria = $event" [p-options]="categorias"></po-combo>
-        <po-input name="inputDescricao" p-label="Descrição" [(ngModel)]="descricao"></po-input>
+        <po-input  p-label="Titulo" name="nome" [(ngModel)]="tarefa.nome"></po-input>
+        <po-combo name="categoria" p-clean p-label="Categorias" [ngModel]="tarefa.categoria" (ngModelChange)="tarefa.categoria = $event" [p-options]="categorias"></po-combo>
+        <po-input name="inputDescricao" p-label="Descrição" [(ngModel)]="tarefa.descricao"></po-input>
         <div class="po-row">
-          <po-button class="po-md-3" p-label="Save" (p-click)="addTarefa()"> </po-button>
+          <po-button class="po-md-3" p-label="Save" (p-click)="salvar()"> </po-button>
         </div>
       </form>
     </po-modal>
-    
-    <po-table [p-columns]="columns" [p-items]="tarefa"> </po-table>
+
+    <po-table [p-columns]="columns" [p-items]="tarefas" p-actions-right="true" [p-actions]="acoes"> 
+    </po-table>
 
   </po-page-default>
 </div>

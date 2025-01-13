@@ -18,6 +18,9 @@ import {
   PoModalComponent,
   PoComboOption,
   PoTableColumn,
+  PoTableAction,
+  PoNotification,
+  PoNotificationService,
 
 } from '@po-ui/ng-components';
 
@@ -43,17 +46,22 @@ import {
 
 export class AppComponent {
   
-  @ViewChild('modalAddTarefa', { static: true }) modalTarefa: PoModalComponent | undefined;
+  @ViewChild('modalTarefa', { static: true }) modalTarefa: PoModalComponent | undefined;
+  @ViewChild('modalExcluir', {static:true}) modalExcluir : PoModalComponent | undefined;
   @ViewChild('form', { static: true }) formulario: NgForm | undefined;
   
-  nome = "";
-  descricao = "";
-  categoria = "";
-  id = 1;
+  tarefa = {
+    nome : "",
+    descricao : "",
+    categoria : "",
+    id : 1,
+  }
+  
+  constructor(private notificacao: PoNotificationService){
+    
+  }
 
-  tarefa = [
-    {id: 0, nome: '', categoria: '', descricao: ''},
-  ];
+  tarefas:Array<any>= [];
 
   public readonly categorias: Array<PoComboOption> = [
     { value: 'suporte', label: 'Suporte' },
@@ -67,29 +75,68 @@ export class AppComponent {
     {property: 'nome', label:'Nome', width: '30%'},
     {property: 'categoria', label:'Categoria', width: '30%'},
     {property: 'descricao', label:'Descrição', width: '20%'},
-    {property: 'acoes', label:'Ações', width:'10%'}
+    {property: 'acoes', label:'Ações', width:'10%', type: 'icon'}
+  ];
+
+  public readonly acoes: Array<PoTableAction> = [
+    {label: 'editar',action: this.editar.bind(this)},
+    {label: 'excluir',action: this.removerTarefa.bind(this)},
   ]
 
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', action: this.onClick.bind(this) },
   ];
 
-  abrirModal() {  
+  ngOnInit(){
+    let tarefasRecuperadas = sessionStorage.getItem('tarefas');
+
+    this.tarefas = tarefasRecuperadas ? JSON.parse(tarefasRecuperadas) : [];
+  }
+  
+  editar(linha:any){
+    this.tarefa = {...linha}
     this.modalTarefa?.open()
+    this.mandarStorage(this.tarefas);
+  }
+
+  abrirModal() {  
+    this.tarefa.id = 0;
+    this.tarefa.nome = "";
+    this.tarefa.descricao = "";
+    this.tarefa.categoria = "";
+    this.modalTarefa?.open();
   }
     
   onClick() {
     alert('Testando menu');
   }
 
-  addTarefa(){
+  removerTarefa(tarefa: any){
+    let indice = this.tarefas.findIndex((t:any) => t.id === tarefa.id);
+    this.tarefas.splice(indice, 1);
+    alert(`Tarefa ${tarefa.nome} removida com sucesso!!!`);
+    this.notificacao.success("teste")
+    this.mandarStorage(this.tarefas);
+  }
+
+  salvar(){
     this.modalTarefa?.close();
-    this.tarefa.push({ id: this.id, nome: this.nome, categoria: this.categoria, descricao: this.descricao });
-    this.nome = "";
-    this.descricao = "";
-    this.categoria = "";
-    this.id += 1;
-    console.log(this.tarefa);
+    if(this.tarefa.id == 0){
+      let ultimoIdTarefa = this.tarefas.reduce((last, tarefa) => tarefa.id, 0);
+      this.tarefa.id = ultimoIdTarefa+1;
+      this.tarefas.push({...this.tarefa});
+    }else{
+      let indice = this.tarefas.findIndex((e:any) => e.id == this.tarefa.id)
+      this.tarefas[indice] = this.tarefa;
+    }
+    this.mandarStorage(this.tarefas);
+  }
+
+  mandarStorage(tarefas: any){
+    console.log(tarefas);
+    let tarefasString = JSON.stringify(tarefas);
+
+    sessionStorage.setItem('tarefas', tarefasString);
   }
  
 }
